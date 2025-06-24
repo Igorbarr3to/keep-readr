@@ -14,4 +14,16 @@ export async function POST(req: NextRequest) {
             fileUrl: '/pdfs/exemplo.pdf',
         }
     })
+
+    return NextResponse.json(pdf)
+}
+
+export async function GET() {
+    const pdfs = await prisma.pDF.findMany({
+        include: {
+            progress: true,
+        }
+    })
+
+    return NextResponse.json(pdfs);
 }
