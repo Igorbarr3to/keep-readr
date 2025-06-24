@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
 
     const pdf = await prisma.pDF.create({
         data: {
-            title: "exemplo",
-            fileUrl: '/pdfs/exemplo.pdf',
+            title: title,
+            fileUrl: fileUrl
         }
     })
 

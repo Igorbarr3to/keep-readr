@@ -1,9 +1,29 @@
-import Image from "next/image";
+'use client'
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      
-    </div>
-  );
+  const {data: session, status} = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/signIn')
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return <p className="p-4">Carregando sessão...</p>
+  }
+
+  if (status === 'authenticated') {
+    return (
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-2">Área Protegida</h1>
+        <p>Bem-vindo, {session.user.email} !</p>
+      </div>
+    )
+  }
 }
