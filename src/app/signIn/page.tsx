@@ -1,85 +1,97 @@
 'use client'
 
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
+import { useState } from 'react'
+
+type FormData = {
+  email: string
+  password: string
+}
 
 export default function SignInPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<FormData>()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const [authError, setAuthError] = useState('')
 
-    try {
-      const res = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
+  const onSubmit = async (data: FormData) => {
+    setAuthError('')
 
-      if (res?.error) {
-        throw new Error(res.error || 'Email ou senha inválidos')
-      }
+    const res = await signIn('credentials', {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    })
 
-      console.log(res)
+    if (res?.error) {
+      setError('email', { message: 'Email ou senha inválidos' })
+      setError('password', { message: ' ' })
+      setAuthError(res.error)
+    } else {
       router.push('/')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login')
-    } finally {
-      setLoading(false)
     }
   }
 
   return (
-    <main className='flex flex-col min-h-screen items-center px-4 bg-gradient-to-b from-neutral-900 to-neutral-700'>
-      <header className='text-center m-30 '>
-        <h1 className="text-4xl md:text-5xl font-bold text-neutral-200 ">
-          KeepReadr
-        </h1>
+    <main className="flex flex-col min-h-screen items-center px-4 bg-gradient-to-b from-neutral-900 to-neutral-700 py-20">
+      <header className="text-center m-30">
+        <h1 className="text-4xl md:text-5xl font-bold text-neutral-200">KeepReadr</h1>
         <p className="mt-2 text-lg text-neutral-400">
           Carregue seus PDFs e nunca mais perca sua página.
         </p>
       </header>
 
-      <form onSubmit={handleLogin} className="space-y-6 w-[300px]">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-[300px]">
         <div>
-          <label className="block text-sm font-medium">Email</label>
+          <label className="block text-sm font-medium text-white">Email</label>
           <input
             type="email"
-            className="w-full border border-neutral-500 bg-neutral-700 rounded-md px-3 py-2"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            className="w-full border border-neutral-500 bg-neutral-700 text-white rounded-md px-3 py-2"
+            {...register('email', { required: 'Email obrigatório' })}
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
         </div>
+
         <div>
-          <label className="block text-sm font-medium">Senha</label>
+          <label className="block text-sm font-medium text-white">Senha</label>
           <input
             type="password"
-            className="w-full border border-neutral-500 bg-neutral-700 rounded-md px-3 py-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            className="w-full border border-neutral-500 bg-neutral-700 text-white rounded-md px-3 py-2"
+            {...register('password', { required: 'Senha obrigatória' })}
           />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+          )}
         </div>
-       
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        {authError && !errors.email && (
+          <p className="text-red-500 text-sm">{authError}</p>
+        )}
+
         <button
           type="submit"
           className="w-full bg-neutral-400 text-neutral-900 font-semibold py-2 rounded hover:bg-neutral-100 transition"
-          disabled={loading}
+          disabled={isSubmitting}
         >
-          {loading ? 'Entrando...' : 'Entrar'}
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
 
-      <p className='mt-6'>Ainda não tem uma conta? <a href='/signUp' className='hover:underline'>Registre-se!</a></p>
+      <p className="mt-6 text-neutral-300">
+        Ainda não tem uma conta?{' '}
+        <a href="/signUp" className="text-white hover:underline">
+          Registre-se!
+        </a>
+      </p>
     </main>
   )
 }

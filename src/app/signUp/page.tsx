@@ -2,23 +2,36 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { Eye, EyeOff } from 'lucide-react'
+
+type FormData = {
+    email: string
+    password: string
+    confirmPassword: string
+}
 
 export default function SignUpPage() {
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setError,
+        formState: { errors, isSubmitting },
+    } = useForm<FormData>()
+
+    const [showPassword, setShowPassword] = useState(false)
+    const [serverError, setServerError] = useState('')
     const router = useRouter()
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
+    const onSubmit = async (data: FormData) => {
+        setServerError('')
 
-        if (password !== confirmPassword) {
-            setError('As senhas não coincidem.')
-            setLoading(false)
+        if (data.password !== data.confirmPassword) {
+            setError('confirmPassword', {
+                type: 'manual',
+                message: 'As senhas não coincidem.',
+            })
             return
         }
 
@@ -26,21 +39,18 @@ export default function SignUpPage() {
             const res = await fetch('/api/signUp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email: data.email, password: data.password }),
             })
 
-            const data = await res.json()
+            const json = await res.json()
 
             if (!res.ok) {
-                throw new Error(data.error || 'Erro ao registrar usuário.')
+                throw new Error(json.error || 'Erro ao cadastrar usuário.')
             }
 
-            router.push('/signIn')
+            router.push('/signIn');
         } catch (err: any) {
-            console.error(err)
-            setError(err.message || 'Erro inesperado.')
-        } finally {
-            setLoading(false)
+            setServerError(err.message || 'Erro inesperado.')
         }
     }
 
@@ -54,46 +64,55 @@ export default function SignUpPage() {
                     Crie sua conta e comece sua leitura!
                 </p>
             </header>
-            <form onSubmit={handleRegister} className="space-y-6 w-[300px]">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-[300px]">
+
                 <div>
                     <label className="block text-sm font-medium">Email</label>
                     <input
                         type="email"
                         className="w-full border border-neutral-500 bg-neutral-700 rounded-md px-3 py-2"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
+                        {...register('email', { required: 'Email obrigatório' })}
                     />
+                    {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                 </div>
-                <div>
+
+                <div className='relative'>
                     <label className="block text-sm font-medium">Senha</label>
                     <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         className="w-full border border-neutral-500 bg-neutral-700 rounded-md px-3 py-2"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
+                        {...register('password', { required: 'Senha obrigatória' })}
                     />
+                    <button
+                        type="button"
+                        className="absolute top-8 right-3 text-neutral-400 hover:text-white"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                    {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
                 </div>
+
                 <div>
-                    <label className="block text-sm font-medium text-white">Repetir Senha</label>
+                    <label className="block text-sm font-medium text-white">Confirmar Senha</label>
                     <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         className="w-full border border-neutral-500 bg-neutral-700 text-white rounded-md px-3 py-2"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
+                        {...register('confirmPassword', { required: 'Confirmação obrigatória' })}
                     />
+                    {errors.confirmPassword && (
+                        <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+                    )}
                 </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
+
                 <button
                     type="submit"
                     className="w-full bg-neutral-400 text-neutral-900 font-semibold py-2 rounded hover:bg-neutral-100 transition"
-                    disabled={loading}
+                    disabled={isSubmitting}
                 >
-                    {loading ? 'Cadastrando...' : 'Cadastrar'}
+                    {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                 </button>
             </form>
-        </main>
+        </main >
     )
 }
