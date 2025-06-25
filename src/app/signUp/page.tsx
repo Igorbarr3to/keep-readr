@@ -85,7 +85,7 @@ export default function SignUpPage() {
                     />
                     <button
                         type="button"
-                        className="absolute top-8 right-3 text-neutral-400 hover:text-white"
+                        className="absolute top-1 right-3 text-neutral-400 hover:text-white"
                         onClick={() => setShowPassword(!showPassword)}
                     >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -113,6 +113,12 @@ export default function SignUpPage() {
                     {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                 </button>
             </form>
+            <p className="mt-6 text-neutral-300">
+                Já tem uma conta?{' '}
+                <a href="/signIn" className="text-white hover:underline">
+                    Faça login!
+                </a>
+            </p>
         </main >
     )
 }

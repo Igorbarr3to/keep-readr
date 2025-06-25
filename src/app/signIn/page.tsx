@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 
 type FormData = {
   email: string
@@ -20,6 +21,7 @@ export default function SignInPage() {
   } = useForm<FormData>()
 
   const [authError, setAuthError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const onSubmit = async (data: FormData) => {
     setAuthError('')
@@ -68,10 +70,11 @@ export default function SignInPage() {
             className="w-full border border-neutral-500 bg-neutral-700 text-white rounded-md px-3 py-2"
             {...register('password', { required: 'Senha obrigatória' })}
           />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-          )}
         </div>
+        
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+        )}
 
         {authError && !errors.email && (
           <p className="text-red-500 text-sm">{authError}</p>
