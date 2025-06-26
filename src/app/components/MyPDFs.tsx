@@ -1,7 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { PDFReaderModal } from "./PDFReaderModal"
+import dynamic from "next/dynamic" // Passo 1: Importar o 'dynamic'
+import { LoaderCircle } from "lucide-react"
+
+// Passo 2: Criar a versão dinâmica do seu modal
+const PDFReaderModalDinamico = dynamic(
+    () => import('./PDFReaderModal').then((mod) => mod.PDFReaderModal),
+    {
+        ssr: false, // A solução mágica!
+        loading: () => (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                <LoaderCircle className="animate-spin text-white" size={48} />
+            </div>
+        )
+    }
+)
 
 type PDF = {
     id: string
@@ -17,7 +31,6 @@ export default function MyPDFs() {
     const [pdfs, setPdfs] = useState<PDF[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
-
     const [openModal, setOpenModal] = useState(false)
     const [selectedPdf, setSelectedPdf] = useState<PDF | null>(null)
 
@@ -27,11 +40,14 @@ export default function MyPDFs() {
                 if (!res.ok) throw new Error("Erro ao buscar PDFs")
                 return res.json()
             })
-            .then((data) => setPdfs(data))
+            .then((data) => {
+                setPdfs(data)
+            })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false))
-    }, [])
+    }, []);
 
+    // O resto da sua lógica está PERFEITA e não precisa mudar.
     if (loading) return <p>Carregando PDFs...</p>
     if (error) return <p className="text-red-500">{error}</p>
     if (pdfs.length === 0) return <p>Nenhum PDF encontrado.</p>
@@ -66,8 +82,9 @@ export default function MyPDFs() {
                 )
             })}
 
+            {/* Passo 3: Use o componente dinâmico aqui */}
             {selectedPdf && (
-                <PDFReaderModal
+                <PDFReaderModalDinamico
                     isOpen={openModal}
                     onClose={() => setOpenModal(false)}
                     fileUrl={selectedPdf.fileUrl}

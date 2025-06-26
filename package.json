@@ -23,7 +23,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.58.1",
-    "react-pdf": "^9.2.1"
+    "react-pdf": "^10.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       resumable: false,
     });
 
-    const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    const fileUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(fileName)}`;
 
     const pdfDoc = await PDFDocument.load(buffer);
     const totalPages = pdfDoc.getPageCount();
